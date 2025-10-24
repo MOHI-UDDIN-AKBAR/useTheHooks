@@ -1,0 +1,119 @@
+@import url("https://fonts.googleapis.com/css2?family=Lilita+One&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=SUSE+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+
+/* Reset  */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ul,
+ol,
+li,
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Variables  */
+:root {
+  /* COLOR SYSTEM */
+  --color-primary: #503217;
+  --color-secondary: #7f6a55;
+  --color-accent: #a1ced1;
+
+  --color-bg-primary: #dedccd;
+  --color-bg-secondary: #503217;
+  --color-bg-accent: #a1ced1;
+
+  --color-border: #877460;
+  --color-light: #ffffff;
+  --color-dark: #000000;
+
+  /* TYPOGRAPHY */
+  --font-primary: "EB Garamond", serif;
+  --font-secondary: "Inter", sans-serif;
+  --font-accent: "SUSE Mono", sans-serif;
+  --font-logo: "Lilita One", cursive;
+
+  --text-base: 1rem;
+  --text-sm: 0.875rem;
+  --text-lg: 1.5rem;
+  --text-xl: 2rem;
+
+  /* SPACING & LAYOUT */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 4rem;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+
+  --container-max-width: 1200px;
+
+  /* BREAKPOINTS */
+  --bp-mobile: 480px;
+  --bp-tablet: 768px;
+  --bp-laptop: 1024px;
+  --bp-desktop: 1280px;
+}
+
+body {
+  max-width: var(--container-max-width);
+  min-height: 100dvh;
+  margin: 0 auto;
+  background-color: var(--color-bg-primary);
+  line-height: 1.6;
+  color: var(--color-primary);
+  display: grid;
+  place-items: center;
+}
+
+.btn {
+  border: 2px solid var(--color-border);
+  font-size: var(--text-base-size);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-sm);
+}
