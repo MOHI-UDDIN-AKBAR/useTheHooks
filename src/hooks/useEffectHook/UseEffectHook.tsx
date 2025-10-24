@@ -12,7 +12,7 @@ type Resources = {
 type ResourceContentProps = {
   resources: Resources[];
   isLoading: boolean;
-  error: string;
+  error: string | null;
 };
 
 const ResourceContent = ({
@@ -20,17 +20,13 @@ const ResourceContent = ({
   isLoading,
   error,
 }: ResourceContentProps) => {
-  console.log("render from resources");
+  if (isLoading) return <div className="loading">Loading...</div>;
 
-  if (isLoading) {
-    return <div className="loading">Loading...</div>;
-  }
+  if (error) return <div className="error">{error}</div>;
 
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
+  if (!resources.length)
+    return <div className="empty-state">No data available.</div>;
 
-  if (!resources.length) return;
   return (
     <section className="resources">
       {resources.map(({ id, name, title }: Resources) => (
@@ -47,68 +43,57 @@ const ResourceContent = ({
 };
 
 const UseEffectHook = () => {
-  const [resourceType, setResourceType] = useState<ResourceType>(
-    () => "posts" as ResourceType
-  );
-
+  const [resourceType, setResourceType] = useState<ResourceType>(() => "posts");
   const [resources, setResources] = useState<Resources[]>(() => []);
   const [isLoading, setIsLoading] = useState(() => false);
-  const [error, setError] = useState(() => "");
+  const [error, setError] = useState<string | null>(() => null);
 
   useEffect(() => {
     const fetchResources = async () => {
       setIsLoading(true);
+      setError(null);
       setResources([]);
-      setError("");
+
       try {
         const response = await fetch(
           `https://jsonplaceholder.typicode.com/${resourceType}`
         );
-        if (!response.ok) return;
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${resourceType} data`);
+        }
+
         const resourceData = (await response.json()) as Resources[];
-        if (resourceData.length) {
-          setResources(resourceData.slice(0, 5));
-        }
+
+        setResources(resourceData.slice(0, 5));
       } catch (err) {
-        console.error(err);
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError(`Failed to fetch ${resourceType} data`);
-        }
+        const message =
+          err instanceof Error
+            ? err.message
+            : `Unexpected error while fetching ${resourceType}`;
+        console.error(message);
+        setError(message);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchResources();
-    console.log("render type changed");
-    console.log(resources);
   }, [resourceType]);
 
   return (
     <section className="resource-type__container">
       <section className="resource-type__controls">
-        <button
-          type="button"
-          className="resource-type__controls-btn btn"
-          onClick={() => setResourceType("posts")}
-        >
-          Posts
-        </button>
-        <button
-          type="button"
-          className="resource-type__controls-btn btn"
-          onClick={() => setResourceType("users")}
-        >
-          Users
-        </button>
-        <button
-          type="button"
-          className="resource-type__controls-btn btn"
-          onClick={() => setResourceType("comments")}
-        >
-          Comments
-        </button>
+        {(["posts", "users", "comments"] as ResourceType[]).map((type) => (
+          <button
+            key={type}
+            type="button"
+            className="resource-type__controls-btn btn"
+            onClick={() => setResourceType(type)}
+          >
+            {type.at(0)?.toUpperCase() + type.slice(1)}
+          </button>
+        ))}
       </section>
       <h1 className="resource-type__name">{resourceType}</h1>
       <ResourceContent
