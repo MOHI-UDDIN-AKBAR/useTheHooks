@@ -1,0 +1,16 @@
+.resource-type__container {
+  display: grid;
+  gap: var(--spacing-md);
+  place-items: center;
+}
+
+.resource-type__controls {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.resource-type__name {
+  font-family: var(--font-primary);
+  font-size: var(--text-xl);
+  text-transform: capitalize;
+}
