@@ -49,6 +49,7 @@ const UseEffectHook = () => {
   const [error, setError] = useState<string | null>(() => null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchResources = async () => {
       setIsLoading(true);
       setError(null);
@@ -56,7 +57,8 @@ const UseEffectHook = () => {
 
       try {
         const response = await fetch(
-          `https://jsonplaceholder.typicode.com/${resourceType}`
+          `https://jsonplaceholder.typicode.com/${resourceType}`,
+          { signal: controller.signal }
         );
 
         if (!response.ok) {
@@ -79,6 +81,8 @@ const UseEffectHook = () => {
     };
 
     fetchResources();
+
+    return () => controller.abort();
   }, [resourceType]);
 
   return (
