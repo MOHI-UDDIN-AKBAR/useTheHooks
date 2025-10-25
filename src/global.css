@@ -116,4 +116,20 @@ body {
   font-size: var(--text-base-size);
   padding: var(--spacing-xs) var(--spacing-md);
   border-radius: var(--radius-sm);
+  border: 2px solid var(--color-border);
+  margin: var(--spacing-xs);
+  color: var(--color-primary);
+}
+
+.label {
+  font-size: var(--text-lg);
+  display: flex;
+  align-items: center;
+}
+
+.field {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
 }
