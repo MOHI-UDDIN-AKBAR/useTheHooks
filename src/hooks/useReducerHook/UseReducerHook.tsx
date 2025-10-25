@@ -1,73 +1,134 @@
-import { useReducer } from "react";
+import { useReducer, useState } from "react";
 import "./UseReducerHook.css";
 
-type CounterState = {
-  count: number;
+type Todo = {
+  id: number;
+  text: string;
+  isComplete: boolean;
 };
 
-const COUNTER_ACTION_TYPES = {
-  INCREMENT: "INCREMENT",
-  DECREMENT: "DECREMENT",
-  RESET: "RESET",
+const TODO_ACTIONS = {
+  ADD_TODO: "ADD",
+  TOGGLE: "TOGGLE",
+  DELETE: "DELETE",
 } as const;
 
-type CounterActionType =
-  (typeof COUNTER_ACTION_TYPES)[keyof typeof COUNTER_ACTION_TYPES];
+type ActionType =
+  | {
+      type: typeof TODO_ACTIONS.ADD_TODO;
+      payload: { text: string };
+    }
+  | {
+      type: typeof TODO_ACTIONS.TOGGLE;
+      payload: { id: number };
+    }
+  | {
+      type: typeof TODO_ACTIONS.DELETE;
+      payload: { id: number };
+    };
 
-const initialState: CounterState = {
-  count: 0,
-};
+const initialTodos: Todo[] = [];
 
-function counterReducer(
-  state: CounterState,
-  action: { type: CounterActionType }
-): CounterState {
+const todoReducer = (state: Todo[], action: ActionType): Todo[] => {
   switch (action.type) {
-    case COUNTER_ACTION_TYPES.DECREMENT: {
-      return { count: state.count - 1 };
+    case TODO_ACTIONS.ADD_TODO: {
+      return [...state, newTodo(action.payload.text)];
     }
-    case COUNTER_ACTION_TYPES.RESET: {
-      return initialState;
+
+    case TODO_ACTIONS.TOGGLE: {
+      return state.map((todoItem) => {
+        if (todoItem.id === action.payload.id) {
+          return { ...todoItem, isComplete: !todoItem.isComplete };
+        }
+        return todoItem;
+      });
     }
-    case COUNTER_ACTION_TYPES.INCREMENT: {
-      return { count: state.count + 1 };
+
+    case TODO_ACTIONS.DELETE: {
+      return state.filter((todoItem) => todoItem.id !== action.payload.id);
     }
+
     default: {
       return state;
     }
   }
+};
+
+function newTodo(text: string) {
+  return {
+    id: Date.now(),
+    text,
+    isComplete: false,
+  };
 }
 
 const UseReducerHook = () => {
-  const [state, dispatch] = useReducer(counterReducer, initialState);
+  const [todos, dispatch] = useReducer(todoReducer, initialTodos);
+  const [text, setText] = useState<string>("");
 
-  const handleDecrement = () =>
+  const handleTodo = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!text.trim()) return;
     dispatch({
-      type: COUNTER_ACTION_TYPES.DECREMENT as CounterActionType,
+      type: TODO_ACTIONS.ADD_TODO,
+      payload: { text: text.trim() },
     });
-  const handleReset = () =>
-    dispatch({
-      type: COUNTER_ACTION_TYPES.RESET as CounterActionType,
-    });
-  const handleIncrement = () =>
-    dispatch({
-      type: COUNTER_ACTION_TYPES.INCREMENT as CounterActionType,
-    });
+    setText("");
+  };
+  const handleToggle = (id: number) => {
+    dispatch({ type: TODO_ACTIONS.TOGGLE, payload: { id } });
+  };
+  const handleDelete = (id: number) => {
+    dispatch({ type: TODO_ACTIONS.DELETE, payload: { id } });
+  };
 
   return (
-    <section className="counter">
-      <h1 className="count">{state.count}</h1>
-      <div className="counter-controls">
-        <button type="button" className="btn" onClick={handleDecrement}>
-          Decrease
+    <section className="todo-list">
+      <form className="todo-list__form" onSubmit={handleTodo}>
+        <label htmlFor="text" className="form-label label">
+          <input
+            type="text"
+            value={text}
+            name="text"
+            onChange={(e) => setText(e.target.value)}
+            className="form-field field"
+          />
+        </label>
+        <button type="submit" className="btn">
+          Submit
         </button>
-        <button type="button" className="btn" onClick={handleReset}>
-          Reset
-        </button>
-        <button type="button" className="btn" onClick={handleIncrement}>
-          Increase
-        </button>
-      </div>
+      </form>
+      <article className="todos">
+        {todos.length
+          ? todos.map(({ text, isComplete, id }) => (
+              <div key={id} className="todos-item">
+                <h3
+                  className={`${
+                    isComplete ? "line-through" : ""
+                  } todos-item-text`}
+                >
+                  {text}
+                </h3>
+                <div className="todos-controls">
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => handleToggle(id)}
+                  >
+                    Toggle
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => handleDelete(id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          : null}
+      </article>
     </section>
   );
 };

@@ -1,5 +1,31 @@
-.counter {
+.todo-list {
   display: grid;
   place-items: center;
   gap: var(--spacing-sm);
+}
+
+.todo-list__form {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.todos {
+  margin-top: var(--spacing-md);
+  display: grid;
+  gap: var(--spacing-sm);
+}
+.todos-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.todos-item-text {
+  font-size: var(--text-lg);
+  text-transform: capitalize;
+  font-weight: 400;
+}
+
+.line-through {
+  text-decoration: line-through;
 }
