@@ -1,31 +1,31 @@
 .todo-list {
-  display: grid;
-  place-items: center;
-  gap: var(--spacing-sm);
+	display: grid;
+	gap: var(--spacing-sm);
+	place-items: center;
 }
 
 .todo-list__form {
-  display: flex;
-  gap: var(--spacing-sm);
+	display: flex;
+	gap: var(--spacing-sm);
 }
 
 .todos {
-  margin-top: var(--spacing-md);
-  display: grid;
-  gap: var(--spacing-sm);
+	display: grid;
+	gap: var(--spacing-sm);
+	margin-top: var(--spacing-md);
 }
 .todos-item {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: var(--spacing-md);
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: var(--spacing-md);
 }
 
 .todos-item-text {
-  font-size: var(--text-lg);
-  text-transform: capitalize;
-  font-weight: 400;
+	font-size: var(--text-lg);
+	font-weight: 400;
+	text-transform: capitalize;
 }
 
 .line-through {
-  text-decoration: line-through;
+	text-decoration: line-through;
 }
