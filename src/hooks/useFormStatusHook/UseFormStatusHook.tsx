@@ -42,7 +42,7 @@ const UseFormStatusHook: React.FC = () => {
 						borderColor: isPending ? '#949494' : '#877460',
 					}}
 				>
-					Create
+					{isPending ? 'Creating...' : 'Create'}
 				</button>
 			</form>
 			<div className="items">
