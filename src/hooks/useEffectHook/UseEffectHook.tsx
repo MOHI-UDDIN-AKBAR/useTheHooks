@@ -1,112 +1,111 @@
 import { useEffect, useState } from 'react';
-import './UseEffectHook.css';
 
-type ResourceType = 'posts' | 'users' | 'comments';
+type CategoryType = 'posts' | 'users' | 'comments';
 
-type Resources = {
-	id: number;
-	title: string | undefined;
-	name: string | undefined;
-};
+type DataType = Record<string, string | number>;
 
-type ResourceContentProps = {
-	resources: Resources[];
-	isLoading: boolean;
-	error: string | null;
-};
+const URL = 'https://jsonplaceholder.typicode.com';
 
-const ResourceContent = ({
-	resources,
-	isLoading,
-	error,
-}: ResourceContentProps) => {
-	if (isLoading) return <div className="loading">Loading...</div>;
-
-	if (error) return <div className="error">{error}</div>;
-
-	if (!resources.length)
-		return <div className="empty-state">No data available.</div>;
-
-	return (
-		<section className="resources">
-			{resources.map(({ id, name, title }: Resources) => (
-				<div key={id} className="resource__body">
-					{name ? (
-						<p className="resource-content">{name}</p>
-					) : title ? (
-						<p className="resource-content">{title}</p>
-					) : null}
-				</div>
-			))}
-		</section>
-	);
-};
-
-const UseEffectHook = () => {
-	const [resourceType, setResourceType] = useState<ResourceType>(() => 'posts');
-	const [resources, setResources] = useState<Resources[]>(() => []);
-	const [isLoading, setIsLoading] = useState(() => false);
-	const [error, setError] = useState<string | null>(() => null);
+const useFetch = (category: CategoryType) => {
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | undefined>(undefined);
+	const [data, setData] = useState<DataType[]>([]);
 
 	useEffect(() => {
+		console.log('Coming');
 		const controller = new AbortController();
-		const fetchResources = async () => {
+		const { signal } = controller;
+		let ignore = false;
+
+		const fetchData = async () => {
 			setIsLoading(true);
-			setError(null);
-			setResources([]);
+			setError(undefined);
+			setData([]);
 
 			try {
-				const response = await fetch(
-					`https://jsonplaceholder.typicode.com/${resourceType}`,
-					{ signal: controller.signal },
-				);
+				const response = await fetch(`${URL}/${category}`, {
+					signal,
+				});
+				if (!response.ok) throw new Error(`Failed to fetch ${category} data.`);
+				const responseData = (await response.json()) as DataType[];
 
-				if (!response.ok) {
-					throw new Error(`Failed to fetch ${resourceType} data`);
+				if (!ignore && !signal.aborted) setData(responseData.slice(0, 3));
+			} catch (e: any) {
+				if (e.name === 'AbortError') {
+					console.error('Fetch aborted');
+					return;
 				}
 
-				const resourceData = (await response.json()) as Resources[];
-
-				setResources(resourceData.slice(0, 5));
-			} catch (err) {
 				const message =
-					err instanceof Error
-						? err.message
-						: `Unexpected error while fetching ${resourceType}`;
-				console.error(message);
-				setError(message);
+					e instanceof Error ? e.message : `Failed to fetch ${category} data.`;
+
+				if (!ignore && !signal.aborted) setError(message);
 			} finally {
-				setIsLoading(false);
+				if (!ignore && !signal.aborted)
+					// For demo purpose
+					setTimeout(() => setIsLoading(false), 2000);
 			}
 		};
 
-		fetchResources();
+		fetchData();
 
-		return () => controller.abort();
-	}, [resourceType]);
+		return () => {
+			ignore = true;
+			controller.abort();
+		};
+	}, [category]);
+
+	return { isLoading, data, error };
+};
+
+const DisplayData = ({ category }: { category: CategoryType }) => {
+	const { data, isLoading, error } = useFetch(category);
+	console.log(error);
+
+	if (isLoading) {
+		return <div>Loading...</div>;
+	}
+	if (error) {
+		return <div> {error}</div>;
+	}
+
+	return <div>{data.length > 0 ? JSON.stringify(data, null, 10) : null}</div>;
+};
+const Hook: React.FC = () => {
+	const [category, setCategory] = useState<CategoryType>('posts');
+
+	const handleCategory = (type: CategoryType) => {
+		setCategory(type);
+	};
 
 	return (
-		<section className="resource-type__container">
-			<section className="resource-type__controls">
-				{(['posts', 'users', 'comments'] as ResourceType[]).map((type) => (
-					<button
-						key={type}
-						type="button"
-						className="resource-type__controls-btn btn"
-						onClick={() => setResourceType(type)}
-					>
-						{type.at(0)?.toUpperCase() + type.slice(1)}
-					</button>
-				))}
-			</section>
-			<h1 className="resource-type__name">{resourceType}</h1>
-			<ResourceContent
-				isLoading={isLoading}
-				error={error}
-				resources={resources}
-			/>
+		<section>
+			<div className="category-controls">
+				<button
+					type="button"
+					className="btn"
+					onClick={() => handleCategory('posts')}
+				>
+					Posts
+				</button>
+				<button
+					type="button"
+					className="btn"
+					onClick={() => handleCategory('comments')}
+				>
+					Comments
+				</button>
+				<button
+					type="button"
+					className="btn"
+					onClick={() => handleCategory('users')}
+				>
+					Users
+				</button>
+			</div>
+			<DisplayData category={category} />
 		</section>
 	);
 };
 
-export default UseEffectHook;
+export default Hook;
