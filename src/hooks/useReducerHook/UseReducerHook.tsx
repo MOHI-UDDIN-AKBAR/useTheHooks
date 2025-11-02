@@ -1,134 +1,153 @@
-import { useReducer, useState } from 'react';
+import { type FormEvent, useReducer, useRef, useState } from 'react';
 import './UseReducerHook.css';
 
-type Todo = {
-	id: number;
-	text: string;
-	isComplete: boolean;
-};
-
-const TODO_ACTIONS = {
-	ADD_TODO: 'ADD',
-	TOGGLE: 'TOGGLE',
-	DELETE: 'DELETE',
+const TODO_ACTION_TYPE = {
+	CREATE: 'CREATE',
+	UPDATE: 'UPDATE',
+	REMOVE: 'REMOVE',
+	CLEAR: 'CLEAR',
 } as const;
 
-type ActionType =
+type TodoType = {
+	id: string;
+	todoTitle: string;
+};
+
+type TodoActionType =
 	| {
-			type: typeof TODO_ACTIONS.ADD_TODO;
-			payload: { text: string };
+			type: typeof TODO_ACTION_TYPE.CREATE;
+			payload: { todoTitle: string };
 	  }
 	| {
-			type: typeof TODO_ACTIONS.TOGGLE;
-			payload: { id: number };
+			type: typeof TODO_ACTION_TYPE.UPDATE;
+			payload: { id: string; todoTitle: string };
 	  }
 	| {
-			type: typeof TODO_ACTIONS.DELETE;
-			payload: { id: number };
+			type: typeof TODO_ACTION_TYPE.REMOVE;
+			payload: { id: string };
+	  }
+	| {
+			type: typeof TODO_ACTION_TYPE.CLEAR;
 	  };
 
-const initialTodos: Todo[] = [];
+const initialTodo: TodoType[] = [];
 
-const todoReducer = (state: Todo[], action: ActionType): Todo[] => {
+const todoReducer = (state: TodoType[], action: TodoActionType): TodoType[] => {
 	switch (action.type) {
-		case TODO_ACTIONS.ADD_TODO: {
-			return [...state, newTodo(action.payload.text)];
-		}
+		case TODO_ACTION_TYPE.CREATE: {
+			const { todoTitle } = action.payload;
+			if (!todoTitle.trim()) return state;
 
-		case TODO_ACTIONS.TOGGLE: {
-			return state.map((todoItem) => {
-				if (todoItem.id === action.payload.id) {
-					return { ...todoItem, isComplete: !todoItem.isComplete };
-				}
-				return todoItem;
+			const newTodo = { id: crypto.randomUUID() as string, todoTitle };
+			return [...state, newTodo];
+		}
+		case TODO_ACTION_TYPE.UPDATE: {
+			const { id, todoTitle } = action.payload;
+
+			return state.map((todo) => {
+				return todo.id === id ? { ...todo, todoTitle } : todo;
 			});
 		}
-
-		case TODO_ACTIONS.DELETE: {
-			return state.filter((todoItem) => todoItem.id !== action.payload.id);
+		case TODO_ACTION_TYPE.REMOVE: {
+			const { id } = action.payload;
+			return state.filter((todo) => todo.id !== id);
 		}
-
+		case TODO_ACTION_TYPE.CLEAR: {
+			return [];
+		}
 		default: {
 			return state;
 		}
 	}
 };
 
-function newTodo(text: string) {
-	return {
-		id: Date.now(),
-		text,
-		isComplete: false,
-	};
-}
+const UseReducerHook: React.FC = () => {
+	const [todoTitle, setTodoTitle] = useState('');
+	const [state, dispatch] = useReducer(todoReducer, initialTodo);
+	const elementRef = useRef<HTMLInputElement>(null);
 
-const UseReducerHook = () => {
-	const [todos, dispatch] = useReducer(todoReducer, initialTodos);
-	const [text, setText] = useState<string>('');
-
-	const handleTodo = (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		if (!text.trim()) return;
-		dispatch({
-			type: TODO_ACTIONS.ADD_TODO,
-			payload: { text: text.trim() },
-		});
-		setText('');
+
+		const todoId = elementRef.current?.dataset.id;
+
+		if (todoId) {
+			dispatch({
+				type: TODO_ACTION_TYPE.UPDATE,
+				payload: { id: todoId, todoTitle },
+			});
+			delete elementRef.current?.dataset.id;
+		} else {
+			dispatch({ type: TODO_ACTION_TYPE.CREATE, payload: { todoTitle } });
+		}
+
+		setTodoTitle('');
 	};
-	const handleToggle = (id: number) => {
-		dispatch({ type: TODO_ACTIONS.TOGGLE, payload: { id } });
-	};
-	const handleDelete = (id: number) => {
-		dispatch({ type: TODO_ACTIONS.DELETE, payload: { id } });
+
+	const handleUpdateTodo = (todo: TodoType) => {
+		if (!elementRef.current) return;
+		elementRef.current.dataset.id = todo.id;
+		elementRef.current.focus();
+		setTodoTitle(todo.todoTitle);
 	};
 
 	return (
-		<section className="todo-list">
-			<form className="todo-list__form" onSubmit={handleTodo}>
-				<label htmlFor="text" className="form-label label">
+		<section>
+			<form className="input-group" onSubmit={handleSubmit}>
+				<label htmlFor="todo">
+					Create a TODO :{' '}
 					<input
+						ref={elementRef}
 						type="text"
-						value={text}
-						name="text"
-						onChange={(e) => setText(e.target.value)}
-						className="form-field field"
+						name="todo"
+						id="todo"
+						value={todoTitle}
+						onChange={(e) => setTodoTitle(e.target.value)}
 					/>
 				</label>
 				<button type="submit" className="btn">
 					Submit
 				</button>
 			</form>
-			<article className="todos">
-				{todos.length
-					? todos.map(({ text, isComplete, id }) => (
-							<div key={id} className="todos-item">
-								<h3
-									className={`${
-										isComplete ? 'line-through' : ''
-									} todos-item-text`}
-								>
-									{text}
-								</h3>
-								<div className="todos-controls">
+			<div className="todos">
+				{state.length > 0
+					? state.map((todo) => (
+							<div key={todo.id} className="todo-item">
+								<p>{todo.todoTitle}</p>
+								<div className="todo-controls">
 									<button
 										type="button"
 										className="btn"
-										onClick={() => handleToggle(id)}
+										onClick={() => handleUpdateTodo(todo)}
 									>
-										Toggle
+										Update
 									</button>
 									<button
 										type="button"
 										className="btn"
-										onClick={() => handleDelete(id)}
+										onClick={() =>
+											dispatch({
+												type: TODO_ACTION_TYPE.REMOVE,
+												payload: { id: todo.id },
+											})
+										}
 									>
-										Delete
+										Remove
 									</button>
 								</div>
 							</div>
 						))
 					: null}
-			</article>
+			</div>
+			{state.length > 0 && (
+				<button
+					type="button"
+					className="btn"
+					onClick={() => dispatch({ type: TODO_ACTION_TYPE.CLEAR })}
+				>
+					Clear Todo
+				</button>
+			)}
 		</section>
 	);
 };
