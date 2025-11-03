@@ -1,38 +1,59 @@
 import { useState } from 'react';
 
-import './UseStateHook.css';
+const OPERATION_TYPE = {
+	INCREMENT: 'INCREMENT',
+	DECREMENT: 'DECREMENT',
+	RESET: 'RESET',
+} as const;
 
-const UseStateHook = () => {
-	const [count, setCount] = useState<number>((): number => 0);
+type OperationType = (typeof OPERATION_TYPE)[keyof typeof OPERATION_TYPE];
+
+const Hook: React.FC = () => {
+	const [count, setCount] = useState(0);
+
+	const handleCount = (type: OperationType) => {
+		switch (type) {
+			case OPERATION_TYPE.DECREMENT: {
+				setCount((prev) => prev - 1);
+				break;
+			}
+			case OPERATION_TYPE.INCREMENT: {
+				setCount((prev) => prev + 1);
+				break;
+			}
+			case OPERATION_TYPE.RESET: {
+				setCount(0);
+				break;
+			}
+		}
+	};
 
 	return (
-		<section className="counter">
-			<h1 className="counter__number">{count}</h1>
-			<div className="counter__controls">
-				<button
-					type="button"
-					className="decrease-btn btn"
-					onClick={() => setCount((prev) => prev - 1)}
-				>
-					Decrease
-				</button>
-				<button
-					type="button"
-					className="reset-btn btn"
-					onClick={() => setCount(() => 0)}
-				>
-					Reset
-				</button>
-				<button
-					type="button"
-					className="increase-btn btn"
-					onClick={() => setCount((prev) => prev + 1)}
-				>
-					Increase
-				</button>
-			</div>
+		<section>
+			<h1> {count}</h1>
+			<button
+				type="button"
+				className="btn"
+				onClick={() => handleCount(OPERATION_TYPE.DECREMENT)}
+			>
+				Decrement
+			</button>
+			<button
+				type="button"
+				className="btn"
+				onClick={() => handleCount(OPERATION_TYPE.RESET)}
+			>
+				Reset
+			</button>
+			<button
+				type="button"
+				className="btn"
+				onClick={() => handleCount(OPERATION_TYPE.INCREMENT)}
+			>
+				Increment
+			</button>
 		</section>
 	);
 };
 
-export default UseStateHook;
+export default Hook;
