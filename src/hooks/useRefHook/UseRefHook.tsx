@@ -7,7 +7,7 @@ const UseRefHook = () => {
 
 	useEffect(() => {
 		prevInputValue.current = inputValue;
-	});
+	}, [inputValue]);
 
 	return (
 		<section className="use-ref__container">
