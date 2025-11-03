@@ -1,11 +1,19 @@
-import { type FormEvent, useState } from 'react';
+import { useActionState } from 'react';
 
 type DataType = { message?: string; error?: string };
 
-async function saveData(value: string): Promise<DataType> {
+async function saveData(
+	prevState: unknown,
+	formData: FormData,
+): Promise<DataType> {
 	await wait(3000);
-	console.log(value, value.length);
-	if (!value.trim()) {
+	const { firstName } = Object.fromEntries(formData.entries()) as {
+		firstName: string;
+	};
+
+	formData.set('firstName', '');
+
+	if (!firstName.trim()) {
 		return Promise.resolve({ error: 'Value is empty' });
 	}
 	return Promise.resolve({ message: 'Value is correct' });
@@ -16,36 +24,17 @@ function wait(duration: number): Promise<unknown> {
 }
 
 const UseActionStateHook: React.FC = () => {
-	const [inputValue, setInputValue] = useState('');
-	const [isLoading, setIsLoading] = useState(false);
-	const [data, setData] = useState<DataType>();
-
-	const handleForm = async (e: FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setIsLoading(true);
-		const newData = await saveData(inputValue);
-		console.log(newData);
-		setData(newData);
-		setInputValue('');
-		setIsLoading(false);
-	};
+	const [data, action, isPending] = useActionState(saveData, undefined);
 
 	return (
 		<>
-			<form onSubmit={handleForm}>
+			<form action={action}>
 				<div className="input-group">
 					<label htmlFor="firstName">
-						FirstName :{' '}
-						<input
-							type="text"
-							name="firstName"
-							id="firstName"
-							value={inputValue}
-							onChange={(e) => setInputValue(e.target.value)}
-						/>
+						FirstName : <input type="text" name="firstName" id="firstName" />
 					</label>
 				</div>
-				<button type="submit" disabled={isLoading}>
+				<button type="submit" disabled={isPending}>
 					Submit
 				</button>
 			</form>
