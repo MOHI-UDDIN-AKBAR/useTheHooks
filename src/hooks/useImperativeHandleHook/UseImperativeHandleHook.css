@@ -1,0 +1,31 @@
+.modal {
+	display: grid;
+	gap: var(--spacing-lg);
+	place-items: center;
+}
+
+.modal-body {
+	position: relative;
+	display: grid;
+	place-items: center;
+	padding: var(--spacing-lg);
+	border: 2px solid var(--color-border);
+}
+
+.cancel {
+	position: absolute;
+	top: var(--spacing-xs);
+	right: var(--spacing-xs);
+}
+
+.cancel-border-color {
+	border-color: rgb(69, 110, 167) !important;
+}
+
+.confirm-border-color {
+	border-color: yellowgreen !important;
+}
+
+.deny-border-color {
+	border-color: rgb(157, 79, 79) !important;
+}
