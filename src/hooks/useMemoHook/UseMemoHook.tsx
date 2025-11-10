@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import './UseMemoHook.css';
 
 const slowFunction = (number: number) => {
 	console.log('calling slow function');
